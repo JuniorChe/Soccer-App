@@ -1,0 +1,56 @@
+import React, { useState, useEffect } from 'react';
+
+const SoccerTeamMessaging = () => {
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [phoneNumbers, setPhoneNumbers] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/messages')
+      .then(res => res.json())
+      .then(data => setMessages(data));
+
+    fetch('/api/contacts')
+      .then(res => res.json())
+      .then(data => setPhoneNumbers(data));
+  }, []);
+
+  const sendMessage = async () => {
+    await fetch('/api/send-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, phoneNumbers })
+    });
+    setMessage('');
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Soccer Team Messaging</h1>
+      <textarea
+        className="border rounded w-full p-2 mb-4"
+        rows="4"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Type your message here..."
+      />
+      <button 
+        onClick={sendMessage} 
+        className="bg-blue-500 text-white px-4 py-2 rounded mb-4">
+        Send Message
+      </button>
+
+      <h2 className="text-xl font-semibold mb-2">Replies</h2>
+      {messages.map((msg, index) => (
+        <div key={index} className="border p-2 mb-2 rounded">
+          <p><strong>{msg.from}</strong>: {msg.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default SoccerTeamMessaging;
+
+// Note: You'll need an Express.js backend with Twilio integration
+// to handle /api/messages and /api/send-message routes.
